@@ -1,23 +1,27 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.IO;
 
 namespace ArcanistsRevamped
 {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    public class ArcanistGame : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        public Game1()
+        #region Constructor
+        public ArcanistGame()
         {
             graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
+            Content.RootDirectory = "Conent";
         }
+        #endregion
 
+        #region Initialize
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
@@ -30,7 +34,9 @@ namespace ArcanistsRevamped
 
             base.Initialize();
         }
+        #endregion
 
+        #region LoadContent
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
@@ -42,7 +48,9 @@ namespace ArcanistsRevamped
 
             // TODO: use this.Content to load your game content here
         }
+        #endregion
 
+        #region UnloadContent
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
         /// game-specific content.
@@ -51,7 +59,9 @@ namespace ArcanistsRevamped
         {
             // TODO: Unload any non ContentManager content here
         }
+        #endregion
 
+        #region Update
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -66,7 +76,9 @@ namespace ArcanistsRevamped
 
             base.Update(gameTime);
         }
+        #endregion
 
+        #region Draw
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -76,8 +88,24 @@ namespace ArcanistsRevamped
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+            #region Load Textures via FileStream
+            FileStream grasslandBackgroundStream = new FileStream("Content/Textures/Background/grasslandBackground.png", FileMode.Open);
+            Texture2D grasslandBackground = Texture2D.FromStream(GraphicsDevice, grasslandBackgroundStream);
+            grasslandBackgroundStream.Dispose();
 
+            FileStream grasslandTerrainStream = new FileStream("Content/Textures/Terrain/grasslandTerrain.png", FileMode.Open);
+            Texture2D grasslandTerrain = Texture2D.FromStream(GraphicsDevice, grasslandTerrainStream);
+            grasslandTerrainStream.Dispose();
+            #endregion
+
+            spriteBatch.Begin();
+
+            spriteBatch.Draw(grasslandBackground, new Rectangle(0, 0, 800, 480), Color.White);
+            spriteBatch.Draw(grasslandTerrain, new Rectangle(0, 0, 800, 480), Color.White);
+
+            spriteBatch.End();
             base.Draw(gameTime);
         }
+        #endregion
     }
 }

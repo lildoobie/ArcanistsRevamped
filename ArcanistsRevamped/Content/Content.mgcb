@@ -13,3 +13,9 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Textures/Background/grasslandBackground.png
+/copy:Textures/Background/grasslandBackground.png
+
+#begin Textures/Terrain/grasslandTerrain.png
+/copy:Textures/Terrain/grasslandTerrain.png
+
