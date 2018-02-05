@@ -13,6 +13,13 @@ namespace ArcanistsRevamped
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        private Texture2D textureSky;
+        private Texture2D textureLevel;
+        private Texture2D textureDeform;
+        private Vector2 mousePosition;
+        private MouseState currentMouseState;
+        private uint[] pixelDeformData;
+
         #region Constructor
         public ArcanistGame()
         {
@@ -31,7 +38,7 @@ namespace ArcanistsRevamped
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            this.IsMouseVisible = true;
             base.Initialize();
         }
         #endregion
@@ -47,6 +54,26 @@ namespace ArcanistsRevamped
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            FileStream skyStream = new FileStream("Content/sky.jpg", FileMode.Open);
+            Texture2D textureSky = Texture2D.FromStream(GraphicsDevice, skyStream);
+            skyStream.Dispose();
+            this.textureSky = textureSky;
+
+            FileStream levelStream = new FileStream("Content/level.png", FileMode.Open);
+            Texture2D textureLevel = Texture2D.FromStream(GraphicsDevice, levelStream);
+            skyStream.Dispose();
+            this.textureLevel = textureLevel;
+
+            FileStream deformStream = new FileStream("Content/deform.png", FileMode.Open);
+            Texture2D textureDeform = Texture2D.FromStream(GraphicsDevice, deformStream);
+            skyStream.Dispose();
+            this.textureDeform = textureDeform;
+
+            // Declare an array to hold the pixel data
+            pixelDeformData = new uint[textureDeform.Width * textureDeform.Height];
+            // Populate the array
+            textureDeform.GetData(pixelDeformData, 0, textureDeform.Width * textureDeform.Height);
+
         }
         #endregion
 
@@ -73,6 +100,7 @@ namespace ArcanistsRevamped
                 Exit();
 
             // TODO: Add your update logic here
+            // UpdateMouse();
 
             base.Update(gameTime);
         }
@@ -100,12 +128,84 @@ namespace ArcanistsRevamped
 
             spriteBatch.Begin();
 
-            spriteBatch.Draw(grasslandBackground, new Rectangle(0, 0, 800, 480), Color.White);
-            spriteBatch.Draw(grasslandTerrain, new Rectangle(0, 0, 800, 480), Color.White);
+            //spriteBatch.Draw(grasslandBackground, new Rectangle(0, 0, 800, 480), Color.White);
+            //spriteBatch.Draw(grasslandTerrain, new Rectangle(0, 0, 800, 480), Color.White);
+            spriteBatch.Draw(textureSky, new Vector2(0, 0), Color.White);
+            spriteBatch.Draw(textureLevel, new Vector2(0, 0), Color.White);
+            spriteBatch.Draw(textureDeform, mousePosition, Color.White);
 
             spriteBatch.End();
             base.Draw(gameTime);
         }
         #endregion
+
+        /**protected void UpdateMouse()
+        {
+            MouseState previousMouseState = currentMouseState;
+
+            currentMouseState = Mouse.GetState();
+
+            // This gets the mouse co-ordinates
+            // relative to the upper left of the game window
+            mousePosition = new Vector2(currentMouseState.X, currentMouseState.Y);
+
+            // Here we make sure that we only call the deform level function
+            // when the left mouse button is released
+            if (previousMouseState.LeftButton == ButtonState.Pressed &&
+              currentMouseState.LeftButton == ButtonState.Released)
+            {
+                DeformLevel();
+            }
+        }**/
+
+        /// <summary>
+        /// 16777215 = Alpha
+        /// 4294967295 = White
+        /// </summary>
+        /**protected void DeformLevel()
+        {
+            // Declare an array to hold the pixel data
+            uint[] pixelLevelData = new uint[textureLevel.Width * textureLevel.Height];
+            // Populate the array
+            textureLevel.GetData(pixelLevelData, 0, textureLevel.Width * textureLevel.Height);
+
+            for (int x = 0; x < textureDeform.Width; x++)
+            {
+                for (int y = 0; y < textureDeform.Height; y++)
+                {
+                    // Do some error checking so we dont draw out of bounds of the array etc..
+                    if (((mousePosition.X + x) < (textureLevel.Width)) &&
+                      ((mousePosition.Y + y) < (textureLevel.Height)))
+                    {
+                        if ((mousePosition.X + x) >= 0 && (mousePosition.Y + y) >= 0)
+                        {
+                            // Here we check that the current co-ordinate of the deform texture is not an alpha value
+                            // And that the current level texture co-ordinate is not an alpha value
+                            if (pixelDeformData[x + y * textureDeform.Width] != 16777215
+                              && pixelLevelData[((int)mousePosition.X + x) +
+                              ((int)mousePosition.Y + y) * textureLevel.Width] != 16777215)
+                            {
+                                // We then check to see if the deform texture's current pixel is white (4294967295)                
+                                if (pixelDeformData[x + y * textureDeform.Width] == 4294967295)
+                                {
+                                    // It's white so we replace it with an Alpha pixel
+                                    pixelLevelData[((int)mousePosition.X + x) + ((int)mousePosition.Y + y)
+                                      * textureLevel.Width] = 16777215;
+                                }
+                                else
+                                {
+                                    // Its not white so just set the level texture pixel to the deform texture pixel
+                                    pixelLevelData[((int)mousePosition.X + x) + ((int)mousePosition.Y + y)
+                                      * textureLevel.Width] = pixelDeformData[x + y * textureDeform.Width];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Update the texture with the changes made above
+            textureLevel.SetData(pixelLevelData);
+        }**/
     }
 }
