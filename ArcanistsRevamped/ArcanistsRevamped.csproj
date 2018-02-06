@@ -80,8 +80,8 @@
     <None Include="Content\player.xnb" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Community\VelcroPhysics-master\VelcroPhysics\VelcroPhysics.MonoGame.csproj">
-      <Project>{dfae4064-15b9-4149-8e88-f6550dee19ce}</Project>
+    <ProjectReference Include="..\VelcroPhysics\VelcroPhysics.MonoGame.csproj">
+      <Project>{49201867-aad2-48c9-a068-3b796b81621f}</Project>
       <Name>VelcroPhysics.MonoGame</Name>
     </ProjectReference>
   </ItemGroup>
