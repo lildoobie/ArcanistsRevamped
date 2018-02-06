@@ -75,9 +75,7 @@
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <MonoGameContentReference Include="Content\Content.mgcb" />
     <None Include="app.manifest" />
-    <None Include="Content\player.xnb" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VelcroPhysics\VelcroPhysics.MonoGame.csproj">
