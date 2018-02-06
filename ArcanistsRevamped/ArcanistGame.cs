@@ -28,9 +28,10 @@ namespace ArcanistsRevamped
 
         // Declare VelcroPhysics.Dynamics variables.
         private Body playerBody;
-        private BodyType playerBodyType;
         private Body levelBody;
         private World gameWorld;
+        private float playerBodyX;
+        private float playerBodyY;
 
         // Declare position variables.
         private Vector2 playerPosition;
@@ -79,17 +80,21 @@ namespace ArcanistsRevamped
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            #region FileStream for Content
+
+            #region FileStream
+            // Uses FileStream to open the sky image and store it in a Texture2D
             FileStream skyStream = new FileStream("Content/sky.jpg", FileMode.Open);
             Texture2D textureSky = Texture2D.FromStream(GraphicsDevice, skyStream);
             skyStream.Dispose();
             this.textureSky = textureSky;
 
+            // Uses FileStream to open the level image and store it in a Texture2D
             FileStream levelStream = new FileStream("Content/level.png", FileMode.Open);
             Texture2D textureLevel = Texture2D.FromStream(GraphicsDevice, levelStream);
             skyStream.Dispose();
             this.levelTexture = textureLevel;
 
+            // Uses FileStream to open the player image and store it in a Texture2D
             FileStream playerStream = new FileStream("Content/player.png", FileMode.Open);
             Texture2D playerTexture = Texture2D.FromStream(GraphicsDevice, playerStream);
             skyStream.Dispose();
@@ -108,6 +113,7 @@ namespace ArcanistsRevamped
             // 1 meters equals 64 pixels here
             ConvertUnits.SetDisplayUnitToSimUnitRatio(64f);
 
+            #region Player
             /* Player */
             // Convert screen center from pixels to meters
             Vector2 playerPosition = ConvertUnits.ToSimUnits(screenCenter) + new Vector2(0, -1.5f);
@@ -117,19 +123,25 @@ namespace ArcanistsRevamped
             var playerBodyTemplate = new BodyTemplate();
             playerBody = BodyFactory.CreateFromTemplate(gameWorld, playerBodyTemplate);
             playerBody.BodyType = BodyType.Dynamic;
+            playerBody.IgnoreGravity = true;
             // Give it some bounce and friction
             playerBody.Restitution = 0.3f;
             playerBody.Friction = 0.5f;
+            #endregion
 
+            #region Level
             /* Ground */
             Vector2 levelPosition = ConvertUnits.ToSimUnits(screenCenter) + new Vector2(0, 1.25f);
 
             // Create the ground fixture
             levelBody = BodyFactory.CreateRectangle(gameWorld, ConvertUnits.ToSimUnits(512f), ConvertUnits.ToSimUnits(64f), 1f, levelPosition);
             levelBody.BodyType = BodyType.Static;
+            levelBody.IgnoreGravity = true;
             // Give it some bounce and friction
             levelBody.Restitution = 0.3f;
             levelBody.Friction = 0.5f;
+            #endregion
+
         }
         #endregion
 
@@ -156,11 +168,10 @@ namespace ArcanistsRevamped
                 Exit();
 
             // TODO: Add your update logic here
-            System.Diagnostics.Debug.WriteLine(playerBody.Position);
+            System.Diagnostics.Debug.WriteLine(playerBodyX);
             System.Diagnostics.Debug.WriteLine(playerPosition);
-
+            
             HandleKeyboard();
-
             //We update the world
             gameWorld.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
 
@@ -187,13 +198,13 @@ namespace ArcanistsRevamped
 
             // Move the Player
             if (state.IsKeyDown(Keys.A))
-                playerPosition.X -= 0.25f;
+                playerBodyX -= 0.25f;
             if (state.IsKeyDown(Keys.D))
-                playerPosition.X += 0.25f;
+                playerBodyX += 0.25f;
             if (state.IsKeyDown(Keys.W))
-                playerPosition.Y -= 0.25f;
+                playerBodyY -= 0.25f;
             if (state.IsKeyDown(Keys.S))
-                playerPosition.Y += 0.25f;
+                playerBodyY += 0.25f;
 
             if (state.IsKeyDown(Keys.Space) && oldKeyState.IsKeyUp(Keys.Space))
                 playerBody.ApplyLinearImpulse(new Vector2(0, -10));
