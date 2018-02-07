@@ -7,6 +7,8 @@ using VelcroPhysics.Dynamics;
 using VelcroPhysics.Factories;
 using VelcroPhysics.Utilities;
 using VelcroPhysics.Templates;
+using VelcroPhysics.Shared;
+using VelcroPhysics.Extensions.DebugView;
 
 namespace ArcanistsRevamped
 {
@@ -30,8 +32,6 @@ namespace ArcanistsRevamped
         private Body playerBody;
         private Body levelBody;
         private World gameWorld;
-        private float playerBodyX;
-        private float playerBodyY;
 
         // Declare position variables.
         private Vector2 playerPosition;
@@ -42,6 +42,13 @@ namespace ArcanistsRevamped
         private Vector2 screenCenter;
         private Vector2 levelOrigin;
         private Vector2 playerOrigin;
+
+        // Declare AABB variables.
+        private AABB levelAABB;
+
+        // Declare Debug variable.
+        private GameDebugView debugView;
+
 
         #region Constructor
         public ArcanistGame()
@@ -80,6 +87,17 @@ namespace ArcanistsRevamped
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+
+            #region Debug
+            if (debugView == null)
+            {
+                debugView = new GameDebugView(gameWorld);
+                // default is shape, controller, joints
+                // we just want shapes to display
+                debugView.RemoveFlags(DebugViewFlags.Controllers);
+                debugView.RemoveFlags(DebugViewFlags.Joint);
+            }
+            #endregion
 
             #region FileStream
             // Uses FileStream to open the sky image and store it in a Texture2D
@@ -135,11 +153,14 @@ namespace ArcanistsRevamped
 
             // Create the ground fixture
             levelBody = BodyFactory.CreateRectangle(gameWorld, ConvertUnits.ToSimUnits(512f), ConvertUnits.ToSimUnits(64f), 1f, levelPosition);
+            //levelBody = BodyFactory.CreatePolygon(gameWorld, new Vertices(), 10f, levelPosition, 0, levelBodyType = BodyType.Static);
             levelBody.BodyType = BodyType.Static;
             levelBody.IgnoreGravity = true;
             // Give it some bounce and friction
             levelBody.Restitution = 0.3f;
             levelBody.Friction = 0.5f;
+            // Construct AABB
+
             #endregion
 
         }
@@ -168,10 +189,11 @@ namespace ArcanistsRevamped
                 Exit();
 
             // TODO: Add your update logic here
-            System.Diagnostics.Debug.WriteLine(playerBodyX);
-            System.Diagnostics.Debug.WriteLine(playerPosition);
+            System.Diagnostics.Debug.WriteLine(playerBody.Position);
+            //System.Diagnostics.Debug.WriteLine(playerPosition);
             
             HandleKeyboard();
+            
             //We update the world
             gameWorld.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
 
@@ -179,6 +201,16 @@ namespace ArcanistsRevamped
         }
         #endregion
 
+        #region Level Collider
+        /*private void LevelCollider()
+        {
+            if (playerPosition.Y = levelPosition.Y)
+            {
+
+            }
+
+        }*/
+        #endregion
         #region HandleKeyboard
         private void HandleKeyboard()
         {
@@ -198,13 +230,13 @@ namespace ArcanistsRevamped
 
             // Move the Player
             if (state.IsKeyDown(Keys.A))
-                playerBodyX -= 0.25f;
+                playerPosition.X -= 0.25f;
             if (state.IsKeyDown(Keys.D))
-                playerBodyX += 0.25f;
+                playerPosition.X += 0.25f;
             if (state.IsKeyDown(Keys.W))
-                playerBodyY -= 0.25f;
+                playerPosition.Y -= 0.25f;
             if (state.IsKeyDown(Keys.S))
-                playerBodyY += 0.25f;
+                playerPosition.Y += 0.25f;
 
             if (state.IsKeyDown(Keys.Space) && oldKeyState.IsKeyUp(Keys.Space))
                 playerBody.ApplyLinearImpulse(new Vector2(0, -10));
@@ -229,7 +261,7 @@ namespace ArcanistsRevamped
 
             //Draw player and ground
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, view);
-            spriteBatch.Draw(playerTexture, ConvertUnits.ToDisplayUnits(playerBody.Position), null, Color.White, playerBody.Rotation, playerOrigin, 1f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(playerTexture, ConvertUnits.ToDisplayUnits(playerPosition), null, Color.White, playerBody.Rotation, playerOrigin, 1f, SpriteEffects.None, 0f);
             spriteBatch.Draw(levelTexture, ConvertUnits.ToDisplayUnits(levelBody.Position), null, Color.White, 0f, levelOrigin, 1f, SpriteEffects.None, 0f);
             spriteBatch.End();
             

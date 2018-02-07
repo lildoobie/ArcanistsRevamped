@@ -13,7 +13,7 @@ namespace VelcroPhysics.Extensions.DebugView
     /// entities in your game.
     public abstract class DebugViewBase
     {
-        protected DebugViewBase(World world)
+        public DebugViewBase(World world)
         {
             World = world;
         }
