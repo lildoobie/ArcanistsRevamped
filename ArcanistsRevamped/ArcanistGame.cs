@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.IO;
 using VelcroPhysics.Collision;
+using VelcroPhysics.Collision.Shapes;
 using VelcroPhysics.Dynamics;
 using VelcroPhysics.Factories;
 using VelcroPhysics.Utilities;
@@ -43,11 +44,18 @@ namespace ArcanistsRevamped
         private Vector2 levelOrigin;
         private Vector2 playerOrigin;
 
-        // Declare AABB variables.
+        // Declare Shape object variables
+        private Shape levelShape;
+        private Shape playerShape;
+        private Vertices playerVertices;
+        private AABB playerAABB;
         private AABB levelAABB;
 
         // Declare Debug variable.
         private GameDebugView debugView;
+
+        // Declare collision groups - every Body object in the same group will collide
+        short gameObject = 1;
 
 
         #region Constructor
@@ -141,7 +149,12 @@ namespace ArcanistsRevamped
             var playerBodyTemplate = new BodyTemplate();
             playerBody = BodyFactory.CreateFromTemplate(gameWorld, playerBodyTemplate);
             playerBody.BodyType = BodyType.Dynamic;
-            playerBody.IgnoreGravity = true;
+            playerAABB = new AABB(playerOrigin, playerTexture.Width, playerTexture.Height);
+            //playerVertices = 
+            //playerShape = new PolygonShape()
+            //playerBody.CreateFixture(playerBodyTemplate);
+            //playerBody.CollisionGroup = gameObject;
+            //playerBody.IgnoreGravity = true;
             // Give it some bounce and friction
             playerBody.Restitution = 0.3f;
             playerBody.Friction = 0.5f;
@@ -155,6 +168,8 @@ namespace ArcanistsRevamped
             levelBody = BodyFactory.CreateRectangle(gameWorld, ConvertUnits.ToSimUnits(512f), ConvertUnits.ToSimUnits(64f), 1f, levelPosition);
             //levelBody = BodyFactory.CreatePolygon(gameWorld, new Vertices(), 10f, levelPosition, 0, levelBodyType = BodyType.Static);
             levelBody.BodyType = BodyType.Static;
+            levelAABB = new AABB(levelOrigin, levelTexture.Width, levelTexture.Height);
+            levelBody.CollisionGroup = gameObject;
             levelBody.IgnoreGravity = true;
             // Give it some bounce and friction
             levelBody.Restitution = 0.3f;
@@ -189,11 +204,14 @@ namespace ArcanistsRevamped
                 Exit();
 
             // TODO: Add your update logic here
-            System.Diagnostics.Debug.WriteLine(playerBody.Position);
-            //System.Diagnostics.Debug.WriteLine(playerPosition);
-            
+            //System.Diagnostics.Debug.WriteLine("playerBody.Position - " + playerBody.Position);
+            //System.Diagnostics.Debug.WriteLine("playerPosition - " + playerPosition);
+            System.Diagnostics.Debug.WriteLine("playerAABB - " + playerAABB.Vertices);
+            //System.Diagnostics.Debug.WriteLine("playerPosition - " + playerPosition);
+            //System.Diagnostics.Debug.WriteLine();
+
             HandleKeyboard();
-            
+            //LevelCollider();
             //We update the world
             gameWorld.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
 
@@ -202,15 +220,20 @@ namespace ArcanistsRevamped
         #endregion
 
         #region Level Collider
-        /*private void LevelCollider()
+        private void LevelCollider()
         {
-            if (playerPosition.Y = levelPosition.Y)
-            {
+            //short gameObject = 1;
+            //playerBody.CollisionGroup = gameObject;
+            //levelBody.CollisionGroup = gameObject;
 
+            if (AABB.TestOverlap(ref playerAABB, ref levelAABB))
+            {
+                System.Diagnostics.Debug.WriteLine("Overlap");
             }
 
-        }*/
+        }
         #endregion
+
         #region HandleKeyboard
         private void HandleKeyboard()
         {
@@ -261,7 +284,7 @@ namespace ArcanistsRevamped
 
             //Draw player and ground
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, view);
-            spriteBatch.Draw(playerTexture, ConvertUnits.ToDisplayUnits(playerPosition), null, Color.White, playerBody.Rotation, playerOrigin, 1f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(playerTexture, ConvertUnits.ToDisplayUnits(playerBody.Position), null, Color.White, playerBody.Rotation, playerOrigin, 1f, SpriteEffects.None, 0f);
             spriteBatch.Draw(levelTexture, ConvertUnits.ToDisplayUnits(levelBody.Position), null, Color.White, 0f, levelOrigin, 1f, SpriteEffects.None, 0f);
             spriteBatch.End();
             
