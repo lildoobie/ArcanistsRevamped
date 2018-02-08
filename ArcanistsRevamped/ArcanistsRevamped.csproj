@@ -42,7 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ArcanistGame.cs" />
-    <Compile Include="GameDebugView.cs" />
+    <Compile Include="GroundTerrain.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -55,28 +55,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\player.png">
+    <Content Include="Textures\Sprites\player.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\sky.jpg">
+    <Content Include="Textures\Background\sky.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\Textures\Background\grasslandBackground.png">
+    <Content Include="Textures\Background\grasslandBackground.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\Textures\Terrain\grasslandTerrain.png">
+    <Content Include="Textures\Terrain\grasslandTerrain.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\deform.png">
+    <Content Include="Textures\Terrain\grasslandTerrainMask.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\level.png">
+    <Content Include="Textures\Terrain\level.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.manifest" />
+    <Content Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FarseerGitHubRepo-master\Source\Farseer Physics DebugView 3.5\DebugView MonoGame.csproj">
@@ -90,10 +91,6 @@
     <ProjectReference Include="..\FarseerGitHubRepo-master\Testbed MonoGame.DesktopGL\Testbed MonoGame.DesktopGL.csproj">
       <Project>{3c8fe0e7-65fe-4e9e-9d43-d00dcd846719}</Project>
       <Name>Testbed MonoGame.DesktopGL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\VelcroPhysics\VelcroPhysics.MonoGame.csproj">
-      <Project>{49201867-aad2-48c9-a068-3b796b81621f}</Project>
-      <Name>VelcroPhysics.MonoGame</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
