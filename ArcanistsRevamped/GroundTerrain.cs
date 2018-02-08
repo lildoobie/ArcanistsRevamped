@@ -13,16 +13,16 @@ using System;
 
 namespace ArcanistsRevamped
 {
-    public class GroundTerrain
+    public class GroundTerrain : Terrain
     {
-        private float circleRadius = 2.5f;
+        public float circleRadius = 2.5f;
         private Terrain groundTerrain;
         private AABB groundTerrainArea;
         public Texture2D groundTexture;
 
-        public GroundTerrain(World world)
+        public GroundTerrain(World world, AABB aabb) : base(world, aabb)
         {
-            groundTerrainArea = new AABB(new Vector2(0, 0), 100, 100);
+            groundTerrainArea = aabb;
             groundTerrain = new Terrain(world, groundTerrainArea)
             {
                 PointsPerUnit = 10,
@@ -35,7 +35,7 @@ namespace ArcanistsRevamped
             groundTerrain.Initialize();
         }
 
-        public void Initialize(Texture2D texture)
+        private void Initialize(Texture2D texture)
         {
             groundTexture = texture;
             Color[] colorData = new Color[groundTexture.Width * groundTexture.Height];
@@ -61,6 +61,22 @@ namespace ArcanistsRevamped
             groundTerrain.ApplyData(data, new Vector2(250, 250));
 
             //Initialize(texture);
+        }
+
+        public void DrawCircleOnMap(Vector2 center, sbyte value)
+        {
+            for (float by = -circleRadius; by < circleRadius; by += 0.1f)
+            {
+                for (float bx = -circleRadius; bx < circleRadius; bx += 0.1f)
+                {
+                    if ((bx * bx) + (by * by) < circleRadius * circleRadius)
+                    {
+                        float ax = bx + center.X;
+                        float ay = by + center.Y;
+                        groundTerrain.ModifyTerrain(new Vector2(ax, ay), value);
+                    }
+                }
+            }
         }
     }
 }

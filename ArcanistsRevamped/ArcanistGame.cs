@@ -5,6 +5,9 @@ using System.IO;
 using FarseerPhysics;
 using FarseerPhysics.DebugView;
 using FarseerPhysics.Dynamics;
+using FarseerPhysics.Common.TextureTools;
+using FarseerPhysics.Collision;
+using FarseerPhysics.Factories;
 
 namespace ArcanistsRevamped
 {
@@ -16,6 +19,8 @@ namespace ArcanistsRevamped
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         DebugViewXNA debugView;
+        public Matrix Projection;
+        public Matrix View;
 
         // Declare texture variables.
         private Texture2D skyTexture;
@@ -26,8 +31,10 @@ namespace ArcanistsRevamped
         // Declare terrain variables
         private GroundTerrain groundTerrain;
 
-        // Declare keyboard state variable.
+        // Declare keyboard and mouse state variable.
         private KeyboardState oldKeyState;
+        private MouseState mouseState;
+        private MouseState oldMouseState;
 
         // Declare VelcroPhysics.Dynamics variables.
         private Body playerBody;
@@ -36,6 +43,8 @@ namespace ArcanistsRevamped
 
         // Declare position variables.
         private Vector2 playerPosition;
+        private Vector2 lower;
+        private Vector2 upper;
 
         // Simple camera controls
         private Matrix view;
@@ -43,6 +52,8 @@ namespace ArcanistsRevamped
         private Vector2 screenCenter;
         private Vector2 groundOrigin;
         private Vector2 playerOrigin;
+
+        private AABB groundTextureArea;
 
         #region Constructor
         public ArcanistGame()
@@ -76,8 +87,101 @@ namespace ArcanistsRevamped
         {
             // TODO: Add your initialization logic here
             debugView = new DebugViewXNA(gameWorld);
+            
+            view = Matrix.Identity;
 
             base.Initialize();
+            
+            CreateProjection();
+
+        }
+        #endregion
+
+        #region Extra Methods
+        private void CreateProjection()
+        {
+            lower = -new Vector2(25.0f * GraphicsDevice.Viewport.AspectRatio, 25.0f);
+            upper = new Vector2(25.0f * GraphicsDevice.Viewport.AspectRatio, 25.0f);
+
+            // L/R/B/T
+            Projection = Matrix.CreateOrthographicOffCenter(lower.X, upper.X, lower.Y, upper.Y, -1, 1);
+        }
+
+        public Vector2 ConvertWorldToScreen(Vector2 position)
+        {
+            Vector3 temp = GraphicsDevice.Viewport.Project(new Vector3(position, 0), Projection, View, Matrix.Identity);
+            return new Vector2(temp.X, temp.Y);
+        }
+
+        public Vector2 ConvertScreenToWorld(int x, int y)
+        {
+            Vector3 temp = GraphicsDevice.Viewport.Unproject(new Vector3(x, y, 0), Projection, View, Matrix.Identity);
+            return new Vector2(temp.X, temp.Y);
+        }
+
+        private void HandleKeyboard()
+        {
+            KeyboardState state = Keyboard.GetState();
+
+            // Move camera
+            if (state.IsKeyDown(Keys.Left))
+                cameraPosition.X += 2.5f;
+            if (state.IsKeyDown(Keys.Right))
+                cameraPosition.X -= 2.5f;
+            if (state.IsKeyDown(Keys.Up))
+                cameraPosition.Y += 2.5f;
+            if (state.IsKeyDown(Keys.Down))
+                cameraPosition.Y -= 2.5f;
+
+            view = Matrix.CreateTranslation(new Vector3(cameraPosition - screenCenter, 0f)) * Matrix.CreateTranslation(new Vector3(screenCenter, 0f));
+
+            // Move the Player
+            if (state.IsKeyDown(Keys.A))
+                playerPosition.X -= 0.25f;
+            if (state.IsKeyDown(Keys.D))
+                playerPosition.X += 0.25f;
+            if (state.IsKeyDown(Keys.W))
+                playerPosition.Y -= 0.25f;
+            if (state.IsKeyDown(Keys.S))
+                playerPosition.Y += 0.25f;
+
+            if (state.IsKeyDown(Keys.Space) && oldKeyState.IsKeyUp(Keys.Space))
+                playerBody.ApplyLinearImpulse(new Vector2(0, -10));
+
+            if (state.IsKeyDown(Keys.Escape))
+                Exit();
+
+            oldKeyState = state;
+        }
+
+        public void TerrainOnClick(MouseState state, MouseState oldState)
+        {
+            Vector2 position = ConvertScreenToWorld(state.X, state.Y);
+
+            if (state.RightButton == ButtonState.Pressed)
+            {
+                groundTerrain.DrawCircleOnMap(position, -1);
+                groundTerrain.RegenerateTerrain();
+
+                debugView.BeginCustomDraw(ref Projection, ref View);
+                debugView.DrawSolidCircle(position, groundTerrain.circleRadius, Vector2.UnitY, Color.Blue * 0.5f);
+                debugView.EndCustomDraw();
+            }
+            else if (state.LeftButton == ButtonState.Pressed)
+            {
+                groundTerrain.DrawCircleOnMap(position, 1);
+                groundTerrain.RegenerateTerrain();
+
+                debugView.BeginCustomDraw(ref Projection, ref View);
+                debugView.DrawSolidCircle(position, groundTerrain.circleRadius, Vector2.UnitY, Color.Red * 0.5f);
+                debugView.EndCustomDraw();
+            }
+            else if (state.MiddleButton == ButtonState.Pressed)
+            {
+                Body circle = BodyFactory.CreateCircle(gameWorld, 1, 1);
+                circle.BodyType = BodyType.Dynamic;
+                circle.Position = position;
+            }
         }
         #endregion
 
@@ -92,8 +196,10 @@ namespace ArcanistsRevamped
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            debugView.LoadContent(GraphicsDevice, Content);
+            oldKeyState = Keyboard.GetState();
+            oldMouseState = Mouse.GetState();
 
-            view = Matrix.Identity;
             cameraPosition = Vector2.Zero;
             screenCenter = new Vector2(graphics.GraphicsDevice.Viewport.Width / 2f, graphics.GraphicsDevice.Viewport.Height / 2f);
 
@@ -107,11 +213,14 @@ namespace ArcanistsRevamped
             // Load the ground Texture2D mask
             groundTextureMask = Content.Load<Texture2D>("grassTextureMask");
 
+            // Calculate the AABB based off of the texture given.
+            groundTextureArea = new AABB(new Vector2(0, 0), 100, 100);
+
             // Pass the World object to GroundTerrain() to create a terrain object that will keep track of data
-            groundTerrain = new GroundTerrain(gameWorld);
+            groundTerrain = new GroundTerrain(gameWorld, groundTextureArea);
 
             // Pass the ground Texture2D object to Initialize()
-            groundTerrain.Initialize(groundTextureMask);
+            //groundTerrain.Initialize(groundTextureMask);
            
 
             // Give it some bounce and friction
@@ -165,50 +274,18 @@ namespace ArcanistsRevamped
                 Exit();
 
             // TODO: Add your update logic here
+            debugView.BeginCustomDraw(ref Projection, ref View);
+            debugView.DrawAABB(ref groundTextureArea, Color.Red * 0.5f);
+            debugView.EndCustomDraw();
 
+            
+            TerrainOnClick(mouseState, oldMouseState);
             HandleKeyboard();
 
             //We update the world
             gameWorld.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
 
             base.Update(gameTime);
-        }
-        #endregion
-
-        #region HandleKeyboard
-        private void HandleKeyboard()
-        {
-            KeyboardState state = Keyboard.GetState();
-
-            // Move camera
-            if (state.IsKeyDown(Keys.Left))
-                cameraPosition.X += 2.5f;
-            if (state.IsKeyDown(Keys.Right))
-                cameraPosition.X -= 2.5f;
-            if (state.IsKeyDown(Keys.Up))
-                cameraPosition.Y += 2.5f;
-            if (state.IsKeyDown(Keys.Down))
-                cameraPosition.Y -= 2.5f;
-
-            view = Matrix.CreateTranslation(new Vector3(cameraPosition - screenCenter, 0f)) * Matrix.CreateTranslation(new Vector3(screenCenter, 0f));
-
-            // Move the Player
-            if (state.IsKeyDown(Keys.A))
-                playerPosition.X -= 0.25f;
-            if (state.IsKeyDown(Keys.D))
-                playerPosition.X += 0.25f;
-            if (state.IsKeyDown(Keys.W))
-                playerPosition.Y -= 0.25f;
-            if (state.IsKeyDown(Keys.S))
-                playerPosition.Y += 0.25f;
-
-            if (state.IsKeyDown(Keys.Space) && oldKeyState.IsKeyUp(Keys.Space))
-                playerBody.ApplyLinearImpulse(new Vector2(0, -10));
-
-            if (state.IsKeyDown(Keys.Escape))
-                Exit();
-
-            oldKeyState = state;
         }
         #endregion
 
@@ -226,7 +303,8 @@ namespace ArcanistsRevamped
             //Draw player and ground
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, view);
             //spriteBatch.Draw(playerTexture, ConvertUnits.ToDisplayUnits(playerBody.Position), null, Color.White, playerBody.Rotation, playerOrigin, 1f, SpriteEffects.None, 0f);
-            spriteBatch.Draw(groundTexture, groundOrigin, Color.White);
+            spriteBatch.Draw(groundTextureMask, groundOrigin, Color.White);
+            
             spriteBatch.End();
             
             base.Draw(gameTime);
