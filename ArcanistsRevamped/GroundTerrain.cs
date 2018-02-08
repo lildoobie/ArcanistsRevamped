@@ -3,6 +3,7 @@ using FarseerPhysics.Collision;
 using FarseerPhysics.Common.Decomposition;
 using FarseerPhysics.Common.TextureTools;
 using FarseerPhysics.Dynamics;
+using FarseerPhysics.Testbed.Tests;
 using FarseerPhysics.Factories;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;

@@ -18,7 +18,7 @@ namespace ArcanistsRevamped
         DebugViewXNA debugView;
 
         // Declare texture variables.
-        private Texture2D textureSky;
+        private Texture2D skyTexture;
         private Texture2D groundTexture;
         private Texture2D groundTextureMask;
         private Texture2D playerTexture;
@@ -102,10 +102,10 @@ namespace ArcanistsRevamped
             Vector2 levelPosition = ConvertUnits.ToSimUnits(screenCenter) + new Vector2(0, 1.25f);
 
             // Load the ground Texture2D object
-            groundTexture = Content.Load<Texture2D>("grasslandTerrain");
+            groundTexture = Content.Load<Texture2D>("grassTexture");
 
             // Load the ground Texture2D mask
-            groundTextureMask = Content.Load<Texture2D>("grasslandTerrainMask");
+            groundTextureMask = Content.Load<Texture2D>("grassTextureMask");
 
             // Pass the World object to GroundTerrain() to create a terrain object that will keep track of data
             groundTerrain = new GroundTerrain(gameWorld);

@@ -55,29 +55,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Textures\Sprites\player.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="Content\grassTexture.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Textures\Background\sky.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Textures\Background\grasslandBackground.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Textures\Terrain\grasslandTerrain.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Textures\Terrain\grasslandTerrainMask.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Textures\Terrain\level.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="Content\grassTextureMask.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.manifest" />
-    <Content Include="Content\Content.mgcb" />
+    <Content Include="Content\Content.mgcb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FarseerGitHubRepo-master\Source\Farseer Physics DebugView 3.5\DebugView MonoGame.csproj">
